@@ -1,0 +1,2 @@
+{% for key in opendkim_keys %}{{ key.selector|default(opendkim_default_selector) }}._domainkey.{{ key.name }} {{ key.name }}:{{ key.selector|default(opendkim_default_selector) }}:{{ opendkim_keys_dir }}/{{ key.name }}.key
+{% endfor %}

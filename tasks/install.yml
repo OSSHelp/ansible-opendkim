@@ -1,0 +1,38 @@
+---
+- name: gather required facts
+  setup:
+    gather_subset: [min]
+  when: ansible_distribution_release is not defined
+
+- name: install required packages
+  apt:
+    name: "{{ opendkim_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 86400
+
+- name: upgrade pip on Xenial
+  pip:
+    name: pip==20.3.4
+    executable: pip3
+  when: ansible_distribution_release == "xenial"
+
+- name: install required pip packages
+  pip:
+    name: "{{ opendkim_pip_packages }}"
+    executable: pip3
+
+- name: create confs dir
+  file:
+    dest: "{{ opendkim_conf_dir }}"
+    state: directory
+
+- name: create keys dir
+  file:
+    dest: "{{ opendkim_keys_dir }}"
+    state: directory
+
+- name: service check
+  service:
+    name: opendkim
+    enabled: yes

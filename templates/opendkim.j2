@@ -1,0 +1,14 @@
+{% if ansible_distribution_release != "xenial" %}
+Socket {{ opendkim_socket }}
+PidFile {{ opendkim_pid_file }}
+UserID {{ opendkim_user }}
+{% endif %}
+Canonicalization relaxed/relaxed
+Syslog yes
+SyslogSuccess yes
+KeyTable file:{{ opendkim_keytable_file }}
+SigningTable file:{{ opendkim_signingtable_file }}
+InternalHosts refile:{{ opendkim_trustedhosts_file }}
+X-Header no
+Mode s
+LogWhy yes

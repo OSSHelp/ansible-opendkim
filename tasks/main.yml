@@ -1,0 +1,8 @@
+---
+- name: install
+  include_tasks: install.yml
+  when: opendkim_setup == "full" or opendkim_setup == "install"
+
+- name: configure
+  import_tasks: configure.yml
+  when: opendkim_setup == "full" or opendkim_setup == "configure"

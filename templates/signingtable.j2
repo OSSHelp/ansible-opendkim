@@ -1,0 +1,2 @@
+{% for key in opendkim_keys %}{{ key.sign_email_from_domain|default(key.name)  }} {{ key.selector|default(opendkim_default_selector) }}._domainkey.{{ key.name }}
+{% endfor %}

@@ -1,0 +1,30 @@
+---
+opendkim_setup: full
+opendkim_packages:
+  - opendkim
+  - opendkim-tools
+  - python-setuptools  # for mitogen only
+  - python3-pip
+
+opendkim_pip_packages:
+  - pyOpenSSL
+
+opendkim_conf_file: /etc/opendkim.conf
+opendkim_conf_dir: /etc/opendkim
+opendkim_keys_dir: "{{ opendkim_conf_dir }}/keys"
+opendkim_keytable_file: "{{ opendkim_conf_dir }}/keytable"
+opendkim_signingtable_file: "{{ opendkim_conf_dir }}/signingtable"
+opendkim_trustedhosts_file: "{{ opendkim_conf_dir }}/trustedhosts"
+opendkim_pid_file: /var/run/opendkim/opendkim.pid
+opendkim_user: opendkim
+
+opendkim_socket: "inet:8891@127.0.0.1"
+
+opendkim_default_trustedhosts:
+  - 127.0.0.1
+
+opendkim_default_key_size: 2048
+opendkim_default_selector: default
+
+opendkim_keys: []
+opendkim_trustedhosts: []
