@@ -4,38 +4,41 @@
     gather_subset: [min]
   when: ansible_distribution_release is not defined
 
-- name: generate private keys
-  openssl_privatekey:
-    path: "{{ opendkim_keys_dir }}/{{ item.name }}.key"
-    size: " {{ item.size | default(opendkim_default_key_size) }}"
-    owner: opendkim
-    group: opendkim
-    mode: 0400
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-  no_log: yes
-  when: item.key is not defined
-  loop: "{{ opendkim_keys }}"
+- name: prepare keys
+  block:
+    - name: generate private keys
+      openssl_privatekey:
+        path: "{{ opendkim_keys_dir }}/{{ item.name }}.key"
+        size: " {{ item.size | default(opendkim_default_key_size) }}"
+        owner: opendkim
+        group: opendkim
+        mode: 0400
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+      no_log: yes
+      when: item.key is not defined
+      loop: "{{ opendkim_keys }}"
 
-- name: copy private keys
-  copy:
-    content: "{{ item.key }}"
-    dest: "{{ opendkim_keys_dir }}/{{ item.name }}.key"
-    owner: opendkim
-    group: opendkim
-    mode: 0400
-  no_log: yes
-  when: item.key is defined
-  loop: "{{ opendkim_keys }}"
+    - name: copy private keys
+      copy:
+        content: "{{ item.key }}"
+        dest: "{{ opendkim_keys_dir }}/{{ item.name }}.key"
+        owner: opendkim
+        group: opendkim
+        mode: 0400
+      no_log: yes
+      when: item.key is defined
+      loop: "{{ opendkim_keys }}"
 
-- name: create pub keys
-  openssl_publickey:
-    privatekey_path: "{{ opendkim_keys_dir }}/{{ item.name }}.key"
-    path: "{{ opendkim_keys_dir }}/{{ item.name }}.pub"
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-  no_log: yes
-  loop: "{{ opendkim_keys }}"
+    - name: create pub keys
+      openssl_publickey:
+        privatekey_path: "{{ opendkim_keys_dir }}/{{ item.name }}.key"
+        path: "{{ opendkim_keys_dir }}/{{ item.name }}.pub"
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+      no_log: yes
+      loop: "{{ opendkim_keys }}"
+  when: not ansible_check_mode
 
 - name: set socket (xenial)
   lineinfile:
@@ -44,26 +47,29 @@
     line: "SOCKET={{ opendkim_socket }}"
   when: ansible_distribution_release == "xenial"
 
-- name: deploy opendkim.conf
-  template:
-    src: opendkim.j2
-    dest: "{{ opendkim_conf_file }}"
-  notify: restart opendkim service
+- name: deploy configuration
+  block:
+    - name: deploy opendkim.conf
+      template:
+        src: opendkim.j2
+        dest: "{{ opendkim_conf_file }}"
+      notify: restart opendkim service
 
-- name: deploy keytable
-  template:
-    src: keytable.j2
-    dest: "{{ opendkim_keytable_file }}"
-  notify: restart opendkim service
+    - name: deploy keytable
+      template:
+        src: keytable.j2
+        dest: "{{ opendkim_keytable_file }}"
+      notify: restart opendkim service
 
-- name: deploy signingtable
-  template:
-    src: signingtable.j2
-    dest: "{{ opendkim_signingtable_file }}"
-  notify: restart opendkim service
+    - name: deploy signingtable
+      template:
+        src: signingtable.j2
+        dest: "{{ opendkim_signingtable_file }}"
+      notify: restart opendkim service
 
-- name: deploy trustedhosts
-  template:
-    src: trustedhosts.j2
-    dest: "{{ opendkim_trustedhosts_file }}"
-  notify: restart opendkim service
+    - name: deploy trustedhosts
+      template:
+        src: trustedhosts.j2
+        dest: "{{ opendkim_trustedhosts_file }}"
+      notify: restart opendkim service
+  when: not ansible_check_mode

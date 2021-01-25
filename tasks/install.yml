@@ -15,7 +15,7 @@
   pip:
     name: pip==20.3.4
     executable: pip3
-  when: ansible_distribution_release == "xenial"
+  when: not ansible_check_mode and ansible_distribution_release == "xenial"
 
 - name: install required pip packages
   pip:
